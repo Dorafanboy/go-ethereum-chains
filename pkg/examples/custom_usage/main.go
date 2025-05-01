@@ -5,8 +5,6 @@ import (
 	"math/big"
 
 	"go-ethereum-chains/pkg/chains"
-	// We don't necessarily need to import predefined if we only work with custom chains,
-	// but it doesn't hurt either.
 )
 
 func main() {
@@ -60,7 +58,7 @@ func main() {
 
 	// 5. Set custom RPCs for the custom chain
 	customRPCs := []string{"http://localhost:9000", "ws://localhost:9001"}
-	err = chains.SetChainRPCs(myChainName, customRPCs) // Use name this time
+	err = chains.SetChainRPCs(myChainName, customRPCs)
 	if err != nil {
 		fmt.Printf("Error setting custom RPCs for %s: %v\n", myChainName, err)
 	} else {
@@ -68,7 +66,7 @@ func main() {
 	}
 
 	// 6. Get RPCs again (should now be the custom ones)
-	currentRPCs, err := chains.GetChainRPCs(myChainID) // Use ID this time
+	currentRPCs, err := chains.GetChainRPCs(myChainID)
 	if err != nil {
 		fmt.Printf("Error getting RPCs for %s after setting custom: %v\n", myChainName, err)
 	} else {

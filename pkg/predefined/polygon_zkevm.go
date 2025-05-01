@@ -21,9 +21,9 @@ var PolygonZkEvm = chains.Chain{
 				"https://zkevm-rpc.com",
 				"https://rpc.ankr.com/polygon_zkevm",
 			},
-			// WebSocket: []string{"wss://..."}, // Public WS endpoint requires provider API key
+			WebSocket: []string{"wss://polygon-zkevm.drpc.org"},
 		},
-		"public": { // Alias for default public access
+		"public": {
 			Http: []string{
 				"https://zkevm-rpc.com",
 				"https://rpc.ankr.com/polygon_zkevm",
@@ -40,7 +40,5 @@ var PolygonZkEvm = chains.Chain{
 			URL:  "https://zkevm.polygonscan.com",
 		},
 	},
-	// Contracts: Specific contracts for Polygon zkEVM might differ.
-	// Multicall3 seems not deployed or has a different address.
 	IsTestnet: false,
 }

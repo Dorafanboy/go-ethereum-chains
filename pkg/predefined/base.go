@@ -17,19 +17,11 @@ var Base = chains.Chain{
 	},
 	RPCUrls: map[string]chains.RpcTarget{
 		"default": {
-			Http: []string{
-				"https://mainnet.base.org",
-				//"https://developer-access-mainnet.base.org", // Requires auth
-				"https://base.publicnode.com",
-			},
-			WebSocket: []string{"wss://mainnet.base.org"},
+			Http: []string{"https://mainnet.base.org", "https://base-mainnet.public.blastapi.io", "https://base.gateway.tenderly.co"},
+			// TODO: Add official node?
 		},
 		"public": {
-			Http: []string{
-				"https://mainnet.base.org",
-				"https://base.publicnode.com",
-			},
-			WebSocket: []string{"wss://mainnet.base.org"},
+			Http: []string{"https://mainnet.base.org", "https://base-mainnet.public.blastapi.io", "https://base.gateway.tenderly.co"},
 		},
 	},
 	BlockExplorers: map[string]chains.BlockExplorer{

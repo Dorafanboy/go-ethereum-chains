@@ -22,9 +22,9 @@ var Linea = chains.Chain{
 				"https://linea.blockpi.network/v1/rpc/public",
 				"https://linea.drpc.org",
 			},
-			// WebSocket: []string{"wss://..."}, // Public WS endpoint requires provider API key
+			WebSocket: []string{"wss://linea-rpc.publicnode.com"},
 		},
-		"public": { // Alias for default public access
+		"public": {
 			Http: []string{
 				"https://rpc.linea.build",
 				"https://linea.blockpi.network/v1/rpc/public",
@@ -45,7 +45,7 @@ var Linea = chains.Chain{
 	Contracts: &chains.Contracts{
 		Multicall3: &chains.Contract{
 			Address:      "0xcA11bde05977b3631167028862bE2a173976CA11",
-			BlockCreated: 42, // Early deployment
+			BlockCreated: 42,
 		},
 	},
 	IsTestnet: false,

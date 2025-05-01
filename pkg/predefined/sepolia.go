@@ -17,11 +17,19 @@ var Sepolia = chains.Chain{
 	},
 	RPCUrls: map[string]chains.RpcTarget{
 		"default": {
-			Http:      []string{"https://rpc.sepolia.org", "https://rpc2.sepolia.org", "https://rpc.ankr.com/eth_sepolia"},
+			Http: []string{
+				"https://rpc.sepolia.org",
+				"https://rpc2.sepolia.org",
+				"https://rpc.ankr.com/eth_sepolia",
+			},
 			WebSocket: []string{"wss://rpc.sepolia.org"},
 		},
 		"public": {
-			Http:      []string{"https://rpc.sepolia.org", "https://rpc2.sepolia.org", "https://rpc.ankr.com/eth_sepolia"},
+			Http: []string{
+				"https://rpc.sepolia.org",
+				"https://rpc2.sepolia.org",
+				"https://rpc.ankr.com/eth_sepolia",
+			},
 			WebSocket: []string{"wss://rpc.sepolia.org"},
 		},
 	},

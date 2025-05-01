@@ -130,8 +130,8 @@ func GetChainRPCs(identifier any) ([]string, error) {
 		return nil, fmt.Errorf("found chain '%s' but its ID is nil", chain.Name)
 	}
 
-	val, userRPCS_ok := userRPCs.Load(chain.ID.Int64())
-	if userRPCS_ok {
+	val, userrpcsOk := userRPCs.Load(chain.ID.Int64())
+	if userrpcsOk {
 		rpcs, typeOK := val.([]string)
 		if typeOK {
 			rpcsCopy := make([]string, len(rpcs))

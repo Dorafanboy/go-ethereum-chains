@@ -22,9 +22,9 @@ var Polygon = chains.Chain{
 				"https://rpc.ankr.com/polygon",
 				"https://polygon.llamarpc.com",
 			},
-			// WebSocket: []string{"wss://..."}, // Public WS endpoint not readily available
+			WebSocket: []string{"wss://polygon-bor-rpc.publicnode.com"},
 		},
-		"public": { // Alias for default public access
+		"public": {
 			Http: []string{
 				"https://polygon-rpc.com",
 				"https://rpc.ankr.com/polygon",

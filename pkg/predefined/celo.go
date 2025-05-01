@@ -23,7 +23,7 @@ var Celo = chains.Chain{
 			},
 			WebSocket: []string{"wss://forno.celo.org/ws"},
 		},
-		"public": { // Alias for default public access
+		"public": {
 			Http: []string{
 				"https://forno.celo.org",
 				"https://rpc.ankr.com/celo",

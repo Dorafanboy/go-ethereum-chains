@@ -19,7 +19,7 @@ var Avalanche = chains.Chain{
 		"default": {
 			Http: []string{
 				"https://api.avax.network/ext/bc/C/rpc",
-				"https://avalanche.public-rpc.com", // Alias for avalanche-c-chain-rpc.publicnode.com
+				"https://avalanche.public-rpc.com",
 				"https://rpc.ankr.com/avalanche",
 			},
 			WebSocket: []string{
@@ -27,7 +27,7 @@ var Avalanche = chains.Chain{
 				"wss://avalanche-c-chain-rpc.publicnode.com",
 			},
 		},
-		"public": { // Alias for default public access
+		"public": {
 			Http: []string{
 				"https://api.avax.network/ext/bc/C/rpc",
 				"https://avalanche.public-rpc.com",

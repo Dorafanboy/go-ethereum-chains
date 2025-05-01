@@ -25,7 +25,7 @@ var Fantom = chains.Chain{
 			},
 			WebSocket: []string{"wss://fantom-rpc.publicnode.com"},
 		},
-		"public": { // Alias for default public access
+		"public": {
 			Http: []string{
 				"https://rpc.ftm.tools",
 				"https://fantom.publicnode.com",

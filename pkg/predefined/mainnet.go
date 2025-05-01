@@ -21,9 +21,9 @@ var Mainnet = chains.Chain{
 				"https://cloudflare-eth.com",
 				"https://rpc.ankr.com/eth",
 			},
-			// WebSocket: []string{"wss://..."}, // Placeholder for WS
+			WebSocket: []string{"wss://ethereum-rpc.publicnode.com"},
 		},
-		"public": { // Alias for default public access
+		"public": {
 			Http: []string{
 				"https://cloudflare-eth.com",
 				"https://rpc.ankr.com/eth",
@@ -45,13 +45,14 @@ var Mainnet = chains.Chain{
 			Address:      "0xcA11bde05977b3631167028862bE2a173976CA11",
 			BlockCreated: 14353601,
 		},
+		// TODO: Add more contracts
 	},
 	EnsRegistry: &chains.Contract{
 		Address: "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
 	},
 	EnsUniversalResolver: &chains.Contract{
 		Address:      "0xc0497E381f536Be9ce14B0dD3817cBcAe57d2F62",
-		BlockCreated: 16966585, // Approx block
+		BlockCreated: 16966585,
 	},
 	IsTestnet: false,
 }

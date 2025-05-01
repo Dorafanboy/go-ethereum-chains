@@ -28,7 +28,7 @@ var Gnosis = chains.Chain{
 				"wss://gnosis-mainnet.public.blastapi.io",
 			},
 		},
-		"public": { // Alias for default public access
+		"public": {
 			Http: []string{
 				"https://rpc.gnosischain.com",
 				"https://gnosis.publicnode.com",

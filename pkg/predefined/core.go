@@ -29,7 +29,7 @@ var Core = chains.Chain{
 				"wss://core.drpc.org",
 			},
 		},
-		"public": { // Alias for default public access
+		"public": {
 			Http: []string{
 				"https://rpc.coredao.org",
 				"https://rpc.ankr.com/core",
@@ -55,8 +55,8 @@ var Core = chains.Chain{
 	},
 	Contracts: &chains.Contracts{
 		Multicall3: &chains.Contract{
-			Address:      "0xcA11bde05977b3631167028862bE2a173976CA11", // Standard address, confirmed by CoreScan
-			BlockCreated: 5608481,                                      // Block when Multicall3 was deployed on Core
+			Address:      "0xcA11bde05977b3631167028862bE2a173976CA11",
+			BlockCreated: 5608481,
 		},
 	},
 	IsTestnet: false,

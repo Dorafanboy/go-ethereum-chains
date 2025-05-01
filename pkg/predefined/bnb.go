@@ -18,7 +18,7 @@ var Bnb = chains.Chain{
 	RPCUrls: map[string]chains.RpcTarget{
 		"default": {
 			Http: []string{
-				"https://bsc-dataseed.bnbchain.org", // Official, may have limitations
+				"https://bsc-dataseed.bnbchain.org",
 				"https://bsc-dataseed1.defibit.io",
 				"https://bsc-dataseed1.ninicoin.io",
 				"https://bsc.publicnode.com",
@@ -26,7 +26,7 @@ var Bnb = chains.Chain{
 			},
 			WebSocket: []string{"wss://bsc.publicnode.com"},
 		},
-		"public": { // Alias for default public access
+		"public": {
 			Http: []string{
 				"https://bsc-dataseed.bnbchain.org",
 				"https://bsc-dataseed1.defibit.io",

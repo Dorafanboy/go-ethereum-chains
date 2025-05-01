@@ -11,7 +11,7 @@ func init() {
 	chains.RegisterChain(Base)
 	chains.RegisterChain(Optimism)
 	chains.RegisterChain(ArbitrumOne)
-	chains.RegisterChain(ZkSync) // Note: Variable name matches the file/concept
+	chains.RegisterChain(ZkSync)
 	chains.RegisterChain(Scroll)
 	chains.RegisterChain(ArbitrumNova)
 	chains.RegisterChain(Polygon)
@@ -23,6 +23,6 @@ func init() {
 	chains.RegisterChain(Core)
 	chains.RegisterChain(Linea)
 	chains.RegisterChain(Fantom)
-	chains.RegisterChain(PolygonZkEvm) // Note: Variable name matches the file/concept
+	chains.RegisterChain(PolygonZkEvm)
 	chains.RegisterChain(Blast)
 }

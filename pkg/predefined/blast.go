@@ -23,9 +23,9 @@ var Blast = chains.Chain{
 				"https://blastl2-mainnet.public.blastapi.io",
 				"https://rpc.ankr.com/blast",
 			},
-			// WebSocket: []string{"wss://..."}, // Public WS endpoint requires provider API key
+			WebSocket: []string{"wss://blast.drpc.org"},
 		},
-		"public": { // Alias for default public access
+		"public": {
 			Http: []string{
 				"https://rpc.blast.io",
 				"https://blast.blockpi.network/v1/rpc/public",
@@ -47,7 +47,7 @@ var Blast = chains.Chain{
 	Contracts: &chains.Contracts{
 		Multicall3: &chains.Contract{
 			Address:      "0xcA11bde05977b3631167028862bE2a173976CA11",
-			BlockCreated: 88, // Early deployment
+			BlockCreated: 88,
 		},
 	},
 	IsTestnet: false,

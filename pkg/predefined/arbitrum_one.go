@@ -17,11 +17,19 @@ var ArbitrumOne = chains.Chain{
 	},
 	RPCUrls: map[string]chains.RpcTarget{
 		"default": {
-			Http:      []string{"https://arb1.arbitrum.io/rpc", "https://arbitrum.publicnode.com", "https://rpc.ankr.com/arbitrum"},
+			Http: []string{
+				"https://arb1.arbitrum.io/rpc",
+				"https://arbitrum.publicnode.com",
+				"https://rpc.ankr.com/arbitrum",
+			},
 			WebSocket: []string{"wss://arb1.arbitrum.io/rpc"},
 		},
 		"public": {
-			Http:      []string{"https://arb1.arbitrum.io/rpc", "https://arbitrum.publicnode.com", "https://rpc.ankr.com/arbitrum"},
+			Http: []string{
+				"https://arb1.arbitrum.io/rpc",
+				"https://arbitrum.publicnode.com",
+				"https://rpc.ankr.com/arbitrum",
+			},
 			WebSocket: []string{"wss://arb1.arbitrum.io/rpc"},
 		},
 	},

@@ -31,7 +31,5 @@ var ZkSync = chains.Chain{
 			URL:  "https://explorer.zksync.io",
 		},
 	},
-	// Contracts: zkSync Era might have different standard contract addresses
-	// or may not deploy standard ones like multicall3.
 	IsTestnet: false,
 }

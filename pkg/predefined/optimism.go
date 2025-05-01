@@ -6,12 +6,10 @@ import (
 	"go-ethereum-chains/pkg/chains"
 )
 
-// TODO: завтра продолжить завершить фикс ошибок рефактор и выкатку
-
 // Optimism (now OP Mainnet) is the Optimism mainnet configuration.
 var Optimism = chains.Chain{
 	ID:   big.NewInt(10),
-	Name: "OP Mainnet", // Official name
+	Name: "OP Mainnet",
 	NativeCurrency: chains.NativeCurrency{
 		Name:     "Ether",
 		Symbol:   "ETH",
@@ -19,11 +17,19 @@ var Optimism = chains.Chain{
 	},
 	RPCUrls: map[string]chains.RpcTarget{
 		"default": {
-			Http:      []string{"https://mainnet.optimism.io", "https://optimism.publicnode.com", "https://rpc.ankr.com/optimism"},
+			Http: []string{
+				"https://mainnet.optimism.io",
+				"https://optimism.publicnode.com",
+				"https://rpc.ankr.com/optimism",
+			},
 			WebSocket: []string{"wss://mainnet.optimism.io"},
 		},
 		"public": {
-			Http:      []string{"https://mainnet.optimism.io", "https://optimism.publicnode.com", "https://rpc.ankr.com/optimism"},
+			Http: []string{
+				"https://mainnet.optimism.io",
+				"https://optimism.publicnode.com",
+				"https://rpc.ankr.com/optimism",
+			},
 			WebSocket: []string{"wss://mainnet.optimism.io"},
 		},
 	},

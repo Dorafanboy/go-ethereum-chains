@@ -25,7 +25,6 @@ import (
 	"math/big"
 
 	"go-ethereum-chains/pkg/chains"
-	// Import the predefined package for its side effect (auto-registration)
 	_ "go-ethereum-chains/pkg/predefined"
 )
 
@@ -58,6 +57,7 @@ Alternatively, you can import the `predefined` package directly and use the expo
 ```go
 import (
 	"fmt"
+	
 	"go-ethereum-chains/pkg/predefined"
 )
 
@@ -135,6 +135,17 @@ func main() {
 *   `func GetChainByName(name string) (Chain, bool)` - Retrieves a chain by its name.
 *   `func SetChainRPCs(identifier any, rpcs []string) error` - Sets custom *HTTP* RPC endpoints override (for `GetChainRPCs`).
 *   `func GetChainRPCs(identifier any) ([]string, error)` - Gets default *HTTP* RPCs (or custom override if set via `SetChainRPCs`). For WS or other providers, access `Chain.RPCUrls` map directly.
+*   **NEW:** `type RPCStatus struct { ... }` - Holds the result of checking a single RPC endpoint (URL, Type, Availability, Latency, BlockNumber, Error).
+*   **NEW:** `type CheckRPCOptions struct { ... }` - Options for checking RPCs (Timeout, CheckHTTP, CheckWS, Providers).
+*   **NEW:** `func DefaultCheckOptions() CheckRPCOptions` - Returns default options for checking RPCs.
+*   **NEW:** `func CheckRPCs(ctx context.Context, identifier any, opts CheckRPCOptions) ([]RPCStatus, error)` - Checks availability and latency of RPC endpoints for a given chain.
+*   **NEW:** `type RPCCriteria struct { ... }` - Criteria for selecting an RPC (AllowHTTP, AllowWS, Providers).
+*   **NEW:** `func DefaultRPCCriteria() RPCCriteria` - Returns default criteria for selecting RPCs.
+*   **NEW:** `func GetFirstRPC(identifier any, criteria RPCCriteria) (string, error)` - Gets the first configured RPC URL matching the criteria (no availability check).
+*   **NEW:** `func GetRandomRPC(identifier any, criteria RPCCriteria) (string, error)` - Gets a random configured RPC URL matching the criteria (no availability check).
+*   **NEW:** `func GetFastestRPC(ctx context.Context, identifier any, criteria RPCCriteria) (string, error)` - Checks RPCs matching criteria and returns the fastest available one (uses a 1-minute cache).
+
+*(See `pkg/examples/rpc_selection/main.go` for usage examples of RPC checking and selection)*
 
 ### Package `pkg/predefined`
 
