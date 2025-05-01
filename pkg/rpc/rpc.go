@@ -1,10 +1,9 @@
-package chains
+package rpc
 
 import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"math/big"
@@ -13,35 +12,18 @@ import (
 	"sync"
 	"time"
 
+	"go-ethereum-chains/internal/types"
+	"go-ethereum-chains/pkg/registry"
+
 	"github.com/gorilla/websocket"
 )
-
-var ErrChainNotFound = errors.New("chain not found")
-
-// RPCStatus holds the result of checking a single RPC endpoint.
-type RPCStatus struct {
-	URL         string
-	IsHTTP      bool
-	IsWebSocket bool
-	IsAvailable bool
-	Latency     time.Duration
-	BlockNumber *big.Int
-	Error       error
-}
 
 // CheckRPCOptions defines parameters for checking RPC endpoints.
 type CheckRPCOptions struct {
 	TimeoutPerCheck time.Duration
 	CheckHTTP       bool
 	CheckWebSocket  bool
-	Providers       []string
-}
-
-// RPCCriteria defines criteria for selecting an RPC endpoint.
-type RPCCriteria struct {
-	AllowHTTP      bool
-	AllowWebSocket bool
-	Providers      []string
+	Providers       []types.ProviderName
 }
 
 // DefaultCheckOptions returns default options for CheckRPCs.
@@ -50,15 +32,15 @@ func DefaultCheckOptions() CheckRPCOptions {
 		TimeoutPerCheck: 5 * time.Second,
 		CheckHTTP:       true,
 		CheckWebSocket:  true,
-		Providers:       []string{"default", "public"},
+		Providers:       []types.ProviderName{types.ProviderDefault, types.ProviderPublic},
 	}
 }
 
-// CheckRPCs checks availability and latency of RPCs for a chain.
-func CheckRPCs(ctx context.Context, identifier any, opts CheckRPCOptions) ([]RPCStatus, error) {
-	chain, err := getChain(identifier)
+// CheckRPCs checks availability and latency of RPCs for a chain identified by ID or name.
+func CheckRPCs(ctx context.Context, identifier any, opts CheckRPCOptions) ([]types.RPCStatus, error) {
+	chain, err := registry.FindChain(identifier)
 	if err != nil {
-		return nil, err
+		return nil, err // Error already includes ErrChainNotFound info
 	}
 
 	var urlsToCheck []struct {
@@ -68,14 +50,14 @@ func CheckRPCs(ctx context.Context, identifier any, opts CheckRPCOptions) ([]RPC
 
 	providersToCheck := opts.Providers
 	if len(providersToCheck) == 0 {
-		providersToCheck = make([]string, 0, len(chain.RPCUrls))
+		providersToCheck = make([]types.ProviderName, 0, len(chain.RPCUrls))
 		for k := range chain.RPCUrls {
-			providersToCheck = append(providersToCheck, k)
+			providersToCheck = append(providersToCheck, types.ProviderName(k))
 		}
 	}
 
 	for _, provider := range providersToCheck {
-		if target, ok := chain.RPCUrls[provider]; ok {
+		if target, ok := chain.RPCUrls[string(provider)]; ok {
 			if opts.CheckHTTP {
 				for _, u := range target.Http {
 					if u != "" {
@@ -100,10 +82,10 @@ func CheckRPCs(ctx context.Context, identifier any, opts CheckRPCOptions) ([]RPC
 	}
 
 	if len(urlsToCheck) == 0 {
-		return []RPCStatus{}, nil
+		return []types.RPCStatus{}, nil // Return empty slice if no URLs found
 	}
 
-	results := make([]RPCStatus, len(urlsToCheck))
+	results := make([]types.RPCStatus, len(urlsToCheck))
 	var wg sync.WaitGroup
 	wg.Add(len(urlsToCheck))
 
@@ -126,48 +108,23 @@ func CheckRPCs(ctx context.Context, identifier any, opts CheckRPCOptions) ([]RPC
 	wg.Wait()
 
 	if ctx.Err() != nil {
+		// Return partial results along with the context error (e.g., timeout)
 		return results, ctx.Err()
 	}
 
 	return results, nil
 }
 
-// jsonRPCRequest represents a JSON-RPC request object.
-type jsonRPCRequest struct {
-	Version string        `json:"jsonrpc"`
-	Method  string        `json:"method"`
-	Params  []interface{} `json:"params"`
-	ID      int           `json:"id"`
-}
-
-// jsonRPCResponse represents a JSON-RPC response object.
-type jsonRPCResponse struct {
-	Version string          `json:"jsonrpc"`
-	ID      int             `json:"id"`
-	Result  json.RawMessage `json:"result,omitempty"`
-	Error   *jsonRPCError   `json:"error,omitempty"`
-}
-
-// jsonRPCError represents a JSON-RPC error object.
-type jsonRPCError struct {
-	Code    int    `json:"code"`
-	Message string `json:"message"`
-}
-
-func (e *jsonRPCError) Error() string {
-	return fmt.Sprintf("RPC error %d: %s", e.Code, e.Message)
-}
-
 // checkHTTP performs the eth_blockNumber check against an HTTP endpoint.
-func checkHTTP(ctx context.Context, url string, timeout time.Duration) RPCStatus {
+func checkHTTP(ctx context.Context, url string, timeout time.Duration) types.RPCStatus {
 	start := time.Now()
-	status := RPCStatus{URL: url, IsHTTP: true}
+	status := types.RPCStatus{URL: url, IsHTTP: true}
 
 	client := http.Client{
 		Timeout: timeout,
 	}
 
-	reqBody := jsonRPCRequest{
+	reqBody := types.JsonRPCRequest{
 		Version: "2.0",
 		Method:  "eth_blockNumber",
 		Params:  []interface{}{},
@@ -179,12 +136,13 @@ func checkHTTP(ctx context.Context, url string, timeout time.Duration) RPCStatus
 		return status
 	}
 
-	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(jsonData))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewBuffer(jsonData))
 	if err != nil {
 		status.Error = fmt.Errorf("failed to create http request: %w", err)
 		return status
 	}
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/json")
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -204,9 +162,9 @@ func checkHTTP(ctx context.Context, url string, timeout time.Duration) RPCStatus
 		return status
 	}
 
-	var rpcResp jsonRPCResponse
+	var rpcResp types.JsonRPCResponse
 	if err := json.Unmarshal(bodyBytes, &rpcResp); err != nil {
-		status.Error = fmt.Errorf("failed to unmarshal json-rpc response: %w", err)
+		status.Error = fmt.Errorf("failed to unmarshal json-rpc response (body: %s): %w", string(bodyBytes), err)
 		return status
 	}
 
@@ -222,7 +180,7 @@ func checkHTTP(ctx context.Context, url string, timeout time.Duration) RPCStatus
 
 	var blockNumberHex string
 	if err := json.Unmarshal(rpcResp.Result, &blockNumberHex); err != nil {
-		status.Error = fmt.Errorf("failed to unmarshal block number result: %w", err)
+		status.Error = fmt.Errorf("failed to unmarshal block number result (%s): %w", string(rpcResp.Result), err)
 		return status
 	}
 
@@ -239,34 +197,34 @@ func checkHTTP(ctx context.Context, url string, timeout time.Duration) RPCStatus
 }
 
 // checkWebSocket performs the eth_blockNumber check against a WebSocket endpoint.
-func checkWebSocket(ctx context.Context, url string, timeout time.Duration) RPCStatus {
+func checkWebSocket(ctx context.Context, url string, timeout time.Duration) types.RPCStatus {
 	start := time.Now()
-	status := RPCStatus{URL: url, IsWebSocket: true}
+	status := types.RPCStatus{URL: url, IsWebSocket: true}
 
 	dialer := websocket.Dialer{
-		HandshakeTimeout: timeout,
+		HandshakeTimeout: timeout / 2,
 	}
 
-	checkCtx, cancel := context.WithTimeout(ctx, timeout)
-	defer cancel()
-
-	conn, resp, err := dialer.DialContext(checkCtx, url, nil)
+	conn, resp, err := dialer.DialContext(ctx, url, nil)
 	if err != nil {
 		errMsg := fmt.Sprintf("websocket dial failed: %v", err)
 		if resp != nil {
-			bodyBytes, _ := io.ReadAll(resp.Body)
+			bodyBytes, readErr := io.ReadAll(resp.Body)
 			resp.Body.Close()
-			errMsg = fmt.Sprintf("%s (status: %s, body: %s)", errMsg, resp.Status, string(bodyBytes))
+			if readErr == nil {
+				errMsg = fmt.Sprintf("%s (status: %s, body: %s)", errMsg, resp.Status, string(bodyBytes))
+			}
 		}
-		status.Error = fmt.Errorf("%s", errMsg)
+		status.Error = fmt.Errorf(errMsg)
 		return status
 	}
 	defer conn.Close()
 
-	_ = conn.SetReadDeadline(time.Now().Add(timeout))
-	_ = conn.SetWriteDeadline(time.Now().Add(timeout))
+	deadline := time.Now().Add(timeout - time.Since(start))
+	_ = conn.SetReadDeadline(deadline)
+	_ = conn.SetWriteDeadline(deadline)
 
-	reqBody := jsonRPCRequest{
+	reqBody := types.JsonRPCRequest{
 		Version: "2.0",
 		Method:  "eth_blockNumber",
 		Params:  []interface{}{},
@@ -277,7 +235,7 @@ func checkWebSocket(ctx context.Context, url string, timeout time.Duration) RPCS
 		return status
 	}
 
-	var rpcResp jsonRPCResponse
+	var rpcResp types.JsonRPCResponse
 	if err := conn.ReadJSON(&rpcResp); err != nil {
 		status.Error = fmt.Errorf("websocket read json failed: %w", err)
 		return status
@@ -291,11 +249,13 @@ func checkWebSocket(ctx context.Context, url string, timeout time.Duration) RPCS
 		status.Error = fmt.Errorf("rpc response id mismatch (got %d, expected %d)", rpcResp.ID, reqBody.ID)
 		return status
 	}
+
 	var blockNumberHex string
 	if err := json.Unmarshal(rpcResp.Result, &blockNumberHex); err != nil {
-		status.Error = fmt.Errorf("failed to unmarshal block number result: %w", err)
+		status.Error = fmt.Errorf("failed to unmarshal block number result (%s): %w", string(rpcResp.Result), err)
 		return status
 	}
+
 	blockNumber := new(big.Int)
 	if _, ok := blockNumber.SetString(strings.TrimPrefix(blockNumberHex, "0x"), 16); !ok {
 		status.Error = fmt.Errorf("failed to parse block number hex: %s", blockNumberHex)
@@ -306,54 +266,4 @@ func checkWebSocket(ctx context.Context, url string, timeout time.Duration) RPCS
 	status.IsAvailable = true
 	status.BlockNumber = blockNumber
 	return status
-}
-
-// getChain is a helper to retrieve a chain by ID or name.
-func getChain(identifier any) (Chain, error) {
-	switch v := identifier.(type) {
-	case *big.Int:
-		chain, found := GetChainByID(v)
-		if !found {
-			return Chain{}, fmt.Errorf("%w: ID %s", ErrChainNotFound, v.String())
-		}
-		return chain, nil
-	case int:
-		chain, found := GetChainByID(big.NewInt(int64(v)))
-		if !found {
-			return Chain{}, fmt.Errorf("%w: ID %d", ErrChainNotFound, v)
-		}
-		return chain, nil
-	case int64:
-		chain, found := GetChainByID(big.NewInt(v))
-		if !found {
-			return Chain{}, fmt.Errorf("%w: ID %d", ErrChainNotFound, v)
-		}
-		return chain, nil
-	case uint:
-		chain, found := GetChainByID(new(big.Int).SetUint64(uint64(v)))
-		if !found {
-			return Chain{}, fmt.Errorf("%w: ID %d", ErrChainNotFound, v)
-		}
-		return chain, nil
-	case uint64:
-		chain, found := GetChainByID(new(big.Int).SetUint64(v))
-		if !found {
-			return Chain{}, fmt.Errorf("%w: ID %d", ErrChainNotFound, v)
-		}
-		return chain, nil
-	case string:
-		if id, ok := new(big.Int).SetString(v, 0); ok {
-			chain, found := GetChainByID(id)
-			if found {
-				return chain, nil
-			}
-		}
-		chain, found := GetChainByName(v)
-		if !found {
-			return Chain{}, fmt.Errorf("%w: Name '%s'", ErrChainNotFound, v)
-		}
-		return chain, nil
-	default:
-		return Chain{}, fmt.Errorf("unsupported identifier type: %T", identifier)
-	}
 }

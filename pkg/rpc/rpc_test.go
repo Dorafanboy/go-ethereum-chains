@@ -1,4 +1,4 @@
-package chains
+package rpc_test
 
 import (
 	"context"
@@ -9,44 +9,24 @@ import (
 	"testing"
 	"time"
 
+	chainstypes "go-ethereum-chains/internal/types"
+	"go-ethereum-chains/pkg/registry"
+	"go-ethereum-chains/pkg/rpc"
+
 	"github.com/gorilla/websocket"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func setupHTTPServer(t *testing.T, handler func(w http.ResponseWriter, r *http.Request)) *httptest.Server {
-	t.Helper()
-	ts := httptest.NewServer(http.HandlerFunc(handler))
-	t.Cleanup(ts.Close)
-	return ts
-}
-
-func setupWSServer(t *testing.T, handler func(conn *websocket.Conn)) (*httptest.Server, string) {
-	t.Helper()
-	upgrader := websocket.Upgrader{}
-	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		conn, err := upgrader.Upgrade(w, r, nil)
-		if err != nil {
-			t.Logf("ws upgrade error: %v", err)
-			return
-		}
-		defer conn.Close()
-		handler(conn)
-	}))
-	wsURL := "ws" + s.URL[len("http"):]
-	t.Cleanup(s.Close)
-	return s, wsURL
-}
-
 // TestCheckRPCs_Basic performs a basic test of the CheckRPCs function using mock servers.
 func TestCheckRPCs_Basic(t *testing.T) {
 	httpServer := setupHTTPServer(t, func(w http.ResponseWriter, r *http.Request) {
-		var req jsonRPCRequest
+		var req chainstypes.JsonRPCRequest
 		err := json.NewDecoder(r.Body).Decode(&req)
 		require.NoError(t, err)
 		require.Equal(t, "eth_blockNumber", req.Method)
 
-		resp := jsonRPCResponse{
+		resp := chainstypes.JsonRPCResponse{
 			Version: "2.0",
 			ID:      req.ID,
 			Result:  json.RawMessage(`"0x123abc"`),
@@ -56,38 +36,43 @@ func TestCheckRPCs_Basic(t *testing.T) {
 	})
 
 	_, wsServerURL := setupWSServer(t, func(conn *websocket.Conn) {
-		var req jsonRPCRequest
+		var req chainstypes.JsonRPCRequest
 		err := conn.ReadJSON(&req)
 		if err != nil {
-			return // Ошибки соединения обрабатываются в тесте
+			// Log or handle? Test might fail if conn closes unexpectedly.
+			t.Logf("ws read error: %v", err)
+			return
 		}
 		require.Equal(t, "eth_blockNumber", req.Method)
 
-		resp := jsonRPCResponse{
+		resp := chainstypes.JsonRPCResponse{
 			Version: "2.0",
 			ID:      req.ID,
 			Result:  json.RawMessage(`"0x456def"`),
 		}
-		_ = conn.WriteJSON(resp)
+		err = conn.WriteJSON(resp)
+		if err != nil {
+			t.Logf("ws write error: %v", err)
+		}
 	})
 
 	mockChainID := big.NewInt(7777)
-	mockChain := Chain{
+	mockChain := chainstypes.Chain{
 		ID:   mockChainID,
 		Name: "Mock RPC Test Chain",
-		RPCUrls: map[string]RpcTarget{
+		RPCUrls: map[string]chainstypes.RpcTarget{
 			"default": {
 				Http:      []string{httpServer.URL, "http://invalid-http-url.test"},
 				WebSocket: []string{wsServerURL, "ws://invalid-ws-url.test"},
 			},
 		},
 	}
-	RegisterChain(mockChain)
+	registry.RegisterChain(mockChain) // Use registry package to register
 
-	opts := DefaultCheckOptions()
+	opts := rpc.DefaultCheckOptions() // Use rpc package
 	opts.TimeoutPerCheck = 2 * time.Second
 
-	statuses, err := CheckRPCs(context.Background(), mockChainID, opts)
+	statuses, err := rpc.CheckRPCs(context.Background(), mockChainID, opts) // Use rpc package
 	require.NoError(t, err)
 	require.Len(t, statuses, 4, "Should have checked 4 URLs")
 
@@ -135,4 +120,28 @@ func TestCheckRPCs_Basic(t *testing.T) {
 	assert.Equal(t, 1, httpFail, "Expected 1 failed HTTP check")
 	assert.Equal(t, 1, wsOK, "Expected 1 successful WS check")
 	assert.Equal(t, 1, wsFail, "Expected 1 failed WS check")
+}
+
+func setupHTTPServer(t *testing.T, handler func(w http.ResponseWriter, r *http.Request)) *httptest.Server {
+	t.Helper()
+	ts := httptest.NewServer(http.HandlerFunc(handler))
+	t.Cleanup(ts.Close)
+	return ts
+}
+
+func setupWSServer(t *testing.T, handler func(conn *websocket.Conn)) (*httptest.Server, string) {
+	t.Helper()
+	upgrader := websocket.Upgrader{}
+	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		conn, err := upgrader.Upgrade(w, r, nil)
+		if err != nil {
+			t.Logf("ws upgrade error: %v", err)
+			return
+		}
+		defer conn.Close()
+		handler(conn)
+	}))
+	wsURL := "ws" + s.URL[len("http"):]
+	t.Cleanup(s.Close)
+	return s, wsURL
 }

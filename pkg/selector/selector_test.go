@@ -1,23 +1,26 @@
-package chains
+package selector
 
 import (
 	"math/big"
 	"slices"
 	"testing"
+
+	"go-ethereum-chains/internal/types"
+	"go-ethereum-chains/pkg/registry"
 )
 
 // Mocks and test data setup
 var testChainID = big.NewInt(9999)
 var testChainName = "Test Chain Selector"
-var testChain = Chain{
+var testChain = types.Chain{
 	ID:   testChainID,
 	Name: testChainName,
-	NativeCurrency: NativeCurrency{
+	NativeCurrency: types.NativeCurrency{
 		Name:     "Test",
 		Symbol:   "TST",
 		Decimals: 18,
 	},
-	RPCUrls: map[string]RpcTarget{
+	RPCUrls: map[string]types.RpcTarget{
 		"default": {
 			Http:      []string{"http://default1.com", "http://default2.com"},
 			WebSocket: []string{"ws://default1.com", "ws://default2.com"},
@@ -30,11 +33,6 @@ var testChain = Chain{
 		},
 	},
 	IsTestnet: true,
-}
-
-func setupSelectorTest() {
-	registryByID.Store(testChainID.Int64(), testChain)
-	registryByName.Store(testChainName, testChain)
 }
 
 // TestGetFirstRPC tests the GetFirstRPC function.
@@ -58,35 +56,35 @@ func TestGetFirstRPC(t *testing.T) {
 		{
 			name:       "Default WS First (HTTP disallowed)",
 			identifier: testChainName,
-			criteria:   RPCCriteria{AllowHTTP: false, AllowWebSocket: true, Providers: []string{"default"}},
+			criteria:   RPCCriteria{AllowHTTP: false, AllowWebSocket: true, Providers: []types.ProviderName{types.ProviderDefault}},
 			want:       "ws://default1.com",
 			wantErr:    false,
 		},
 		{
 			name:       "Public HTTP First (Default has no HTTP allowed)",
 			identifier: testChainID,
-			criteria:   RPCCriteria{AllowHTTP: true, AllowWebSocket: false, Providers: []string{"specific", "public"}},
+			criteria:   RPCCriteria{AllowHTTP: true, AllowWebSocket: false, Providers: []types.ProviderName{types.ProviderName("specific"), types.ProviderPublic}},
 			want:       "http://public1.com",
 			wantErr:    false,
 		},
 		{
 			name:       "Specific WS First",
 			identifier: testChainID,
-			criteria:   RPCCriteria{AllowHTTP: false, AllowWebSocket: true, Providers: []string{"specific"}},
+			criteria:   RPCCriteria{AllowHTTP: false, AllowWebSocket: true, Providers: []types.ProviderName{types.ProviderName("specific")}},
 			want:       "ws://specific1.com",
 			wantErr:    false,
 		},
 		{
 			name:       "No Match Found (Specific provider, only HTTP allowed)",
 			identifier: testChainID,
-			criteria:   RPCCriteria{AllowHTTP: true, AllowWebSocket: false, Providers: []string{"specific"}},
+			criteria:   RPCCriteria{AllowHTTP: true, AllowWebSocket: false, Providers: []types.ProviderName{types.ProviderName("specific")}},
 			want:       "",
 			wantErr:    true,
 		},
 		{
 			name:       "No Match Found (WS disallowed)",
 			identifier: testChainID,
-			criteria:   RPCCriteria{AllowHTTP: false, AllowWebSocket: false, Providers: []string{"default"}},
+			criteria:   RPCCriteria{AllowHTTP: false, AllowWebSocket: false, Providers: []types.ProviderName{types.ProviderDefault}},
 			want:       "",
 			wantErr:    true,
 		},
@@ -141,21 +139,21 @@ func TestGetRandomRPC(t *testing.T) {
 		{
 			name:           "Default WS Only",
 			identifier:     testChainName,
-			criteria:       RPCCriteria{AllowHTTP: false, AllowWebSocket: true, Providers: []string{"default"}},
+			criteria:       RPCCriteria{AllowHTTP: false, AllowWebSocket: true, Providers: []types.ProviderName{types.ProviderDefault}},
 			wantCandidates: []string{"ws://default1.com", "ws://default2.com"},
 			wantErr:        false,
 		},
 		{
 			name:           "Specific Provider WS",
 			identifier:     testChainID,
-			criteria:       RPCCriteria{AllowHTTP: false, AllowWebSocket: true, Providers: []string{"specific"}},
+			criteria:       RPCCriteria{AllowHTTP: false, AllowWebSocket: true, Providers: []types.ProviderName{types.ProviderName("specific")}},
 			wantCandidates: []string{"ws://specific1.com"},
 			wantErr:        false,
 		},
 		{
 			name:       "All Providers, All Types",
 			identifier: testChainID,
-			criteria:   RPCCriteria{AllowHTTP: true, AllowWebSocket: true, Providers: []string{"default", "public", "specific"}},
+			criteria:   RPCCriteria{AllowHTTP: true, AllowWebSocket: true, Providers: []types.ProviderName{types.ProviderDefault, types.ProviderPublic, types.ProviderName("specific")}},
 			wantCandidates: []string{
 				"http://default1.com", "http://default2.com",
 				"ws://default1.com", "ws://default2.com",
@@ -167,7 +165,7 @@ func TestGetRandomRPC(t *testing.T) {
 		{
 			name:           "No Match Found (Specific provider, only HTTP allowed)",
 			identifier:     testChainID,
-			criteria:       RPCCriteria{AllowHTTP: true, AllowWebSocket: false, Providers: []string{"specific"}},
+			criteria:       RPCCriteria{AllowHTTP: true, AllowWebSocket: false, Providers: []types.ProviderName{types.ProviderName("specific")}},
 			wantCandidates: nil,
 			wantErr:        true,
 		},
@@ -214,4 +212,8 @@ func TestGetRandomRPC(t *testing.T) {
 			}
 		})
 	}
+}
+
+func setupSelectorTest() {
+	registry.RegisterChain(testChain)
 }

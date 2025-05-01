@@ -1,21 +1,20 @@
 package predefined
 
 import (
+	"go-ethereum-chains/internal/types"
 	"math/big"
-
-	"go-ethereum-chains/pkg/chains"
 )
 
 // Linea is the Linea mainnet configuration.
-var Linea = chains.Chain{
+var Linea = types.Chain{
 	ID:   big.NewInt(59144),
 	Name: "Linea",
-	NativeCurrency: chains.NativeCurrency{
+	NativeCurrency: types.NativeCurrency{
 		Name:     "Ether",
 		Symbol:   "ETH",
 		Decimals: 18,
 	},
-	RPCUrls: map[string]chains.RpcTarget{
+	RPCUrls: map[string]types.RpcTarget{
 		"default": {
 			Http: []string{
 				"https://rpc.linea.build",
@@ -32,7 +31,7 @@ var Linea = chains.Chain{
 			},
 		},
 	},
-	BlockExplorers: map[string]chains.BlockExplorer{
+	BlockExplorers: map[string]types.BlockExplorer{
 		"default": {
 			Name: "LineaScan",
 			URL:  "https://lineascan.build",
@@ -42,8 +41,8 @@ var Linea = chains.Chain{
 			URL:  "https://lineascan.build",
 		},
 	},
-	Contracts: &chains.Contracts{
-		Multicall3: &chains.Contract{
+	Contracts: &types.Contracts{
+		Multicall3: &types.Contract{
 			Address:      "0xcA11bde05977b3631167028862bE2a173976CA11",
 			BlockCreated: 42,
 		},

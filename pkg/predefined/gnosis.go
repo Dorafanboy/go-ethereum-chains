@@ -1,21 +1,20 @@
 package predefined
 
 import (
+	"go-ethereum-chains/internal/types"
 	"math/big"
-
-	"go-ethereum-chains/pkg/chains"
 )
 
 // Gnosis is the Gnosis Chain mainnet configuration.
-var Gnosis = chains.Chain{
+var Gnosis = types.Chain{
 	ID:   big.NewInt(100),
 	Name: "Gnosis",
-	NativeCurrency: chains.NativeCurrency{
+	NativeCurrency: types.NativeCurrency{
 		Name:     "xDai",
 		Symbol:   "xDAI",
 		Decimals: 18,
 	},
-	RPCUrls: map[string]chains.RpcTarget{
+	RPCUrls: map[string]types.RpcTarget{
 		"default": {
 			Http: []string{
 				"https://rpc.gnosischain.com",
@@ -41,7 +40,7 @@ var Gnosis = chains.Chain{
 			},
 		},
 	},
-	BlockExplorers: map[string]chains.BlockExplorer{
+	BlockExplorers: map[string]types.BlockExplorer{
 		"default": {
 			Name: "GnosisScan",
 			URL:  "https://gnosisscan.io",
@@ -55,8 +54,8 @@ var Gnosis = chains.Chain{
 			URL:  "https://gnosis.blockscout.com",
 		},
 	},
-	Contracts: &chains.Contracts{
-		Multicall3: &chains.Contract{
+	Contracts: &types.Contracts{
+		Multicall3: &types.Contract{
 			Address:      "0xcA11bde05977b3631167028862bE2a173976CA11",
 			BlockCreated: 21022491,
 		},

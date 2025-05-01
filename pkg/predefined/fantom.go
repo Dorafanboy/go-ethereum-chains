@@ -1,21 +1,20 @@
 package predefined
 
 import (
+	"go-ethereum-chains/internal/types"
 	"math/big"
-
-	"go-ethereum-chains/pkg/chains"
 )
 
 // Fantom is the Fantom Opera mainnet configuration.
-var Fantom = chains.Chain{
+var Fantom = types.Chain{
 	ID:   big.NewInt(250),
 	Name: "Fantom Opera",
-	NativeCurrency: chains.NativeCurrency{
+	NativeCurrency: types.NativeCurrency{
 		Name:     "Fantom",
 		Symbol:   "FTM",
 		Decimals: 18,
 	},
-	RPCUrls: map[string]chains.RpcTarget{
+	RPCUrls: map[string]types.RpcTarget{
 		"default": {
 			Http: []string{
 				"https://rpc.ftm.tools",
@@ -35,7 +34,7 @@ var Fantom = chains.Chain{
 			WebSocket: []string{"wss://fantom-rpc.publicnode.com"},
 		},
 	},
-	BlockExplorers: map[string]chains.BlockExplorer{
+	BlockExplorers: map[string]types.BlockExplorer{
 		"default": {
 			Name: "FTMScan",
 			URL:  "https://ftmscan.com",
@@ -45,8 +44,8 @@ var Fantom = chains.Chain{
 			URL:  "https://ftmscan.com",
 		},
 	},
-	Contracts: &chains.Contracts{
-		Multicall3: &chains.Contract{
+	Contracts: &types.Contracts{
+		Multicall3: &types.Contract{
 			Address:      "0xcA11bde05977b3631167028862bE2a173976CA11",
 			BlockCreated: 33001987,
 		},

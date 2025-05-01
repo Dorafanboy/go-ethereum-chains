@@ -1,39 +1,49 @@
-package chains
+package selector
 
 import (
 	"crypto/rand"
 	"fmt"
 	"math/big"
 	"sort"
+
+	"go-ethereum-chains/internal/types"
+	"go-ethereum-chains/pkg/registry"
 )
+
+// RPCCriteria defines criteria for selecting an RPC endpoint.
+type RPCCriteria struct {
+	AllowHTTP      bool
+	AllowWebSocket bool
+	Providers      []types.ProviderName
+}
 
 // DefaultRPCCriteria returns default criteria (HTTP only, default/public providers).
 func DefaultRPCCriteria() RPCCriteria {
 	return RPCCriteria{
 		AllowHTTP:      true,
 		AllowWebSocket: false,
-		Providers:      []string{"default", "public"},
+		Providers:      []types.ProviderName{types.ProviderDefault, types.ProviderPublic},
 	}
 }
 
 // GetRandomRPC selects a random configured RPC URL matching criteria using crypto/rand (no availability check).
 func GetRandomRPC(identifier any, criteria RPCCriteria) (string, error) {
-	chain, err := getChain(identifier)
+	chain, err := registry.FindChain(identifier)
 	if err != nil {
 		return "", fmt.Errorf("failed to get chain %v: %w", identifier, err)
 	}
 
 	var candidates []string
 	providersToCheck := criteria.Providers
-	if len(providersToCheck) == 0 { // If empty, check all providers
-		providersToCheck = make([]string, 0, len(chain.RPCUrls))
+	if len(providersToCheck) == 0 {
+		providersToCheck = make([]types.ProviderName, 0, len(chain.RPCUrls))
 		for provider := range chain.RPCUrls {
-			providersToCheck = append(providersToCheck, provider)
+			providersToCheck = append(providersToCheck, types.ProviderName(provider))
 		}
 	}
 
 	for _, provider := range providersToCheck {
-		if target, ok := chain.RPCUrls[provider]; ok {
+		if target, ok := chain.RPCUrls[string(provider)]; ok {
 			if criteria.AllowHTTP {
 				candidates = append(candidates, target.Http...)
 			}
@@ -57,22 +67,24 @@ func GetRandomRPC(identifier any, criteria RPCCriteria) (string, error) {
 
 // GetFirstRPC finds the first configured RPC URL matching criteria (no availability check).
 func GetFirstRPC(identifier any, criteria RPCCriteria) (string, error) {
-	chain, err := getChain(identifier)
+	chain, err := registry.FindChain(identifier)
 	if err != nil {
 		return "", fmt.Errorf("failed to get chain %v: %w", identifier, err)
 	}
 
 	providersToCheck := criteria.Providers
 	if len(providersToCheck) == 0 {
-		providersToCheck = make([]string, 0, len(chain.RPCUrls))
+		providersToCheck = make([]types.ProviderName, 0, len(chain.RPCUrls))
 		for provider := range chain.RPCUrls {
-			providersToCheck = append(providersToCheck, provider)
+			providersToCheck = append(providersToCheck, types.ProviderName(provider))
 		}
-		sort.Strings(providersToCheck)
+		sort.Slice(providersToCheck, func(i, j int) bool {
+			return string(providersToCheck[i]) < string(providersToCheck[j])
+		})
 	}
 
 	for _, provider := range providersToCheck {
-		if target, ok := chain.RPCUrls[provider]; ok {
+		if target, ok := chain.RPCUrls[string(provider)]; ok {
 			if criteria.AllowHTTP {
 				if len(target.Http) > 0 {
 					return target.Http[0], nil

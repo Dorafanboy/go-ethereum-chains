@@ -1,21 +1,20 @@
 package predefined
 
 import (
+	"go-ethereum-chains/internal/types"
 	"math/big"
-
-	"go-ethereum-chains/pkg/chains"
 )
 
 // Core is the Core DAO mainnet configuration.
-var Core = chains.Chain{
+var Core = types.Chain{
 	ID:   big.NewInt(1116),
 	Name: "Core",
-	NativeCurrency: chains.NativeCurrency{
+	NativeCurrency: types.NativeCurrency{
 		Name:     "Core",
 		Symbol:   "CORE",
 		Decimals: 18,
 	},
-	RPCUrls: map[string]chains.RpcTarget{
+	RPCUrls: map[string]types.RpcTarget{
 		"default": {
 			Http: []string{
 				"https://rpc.coredao.org",
@@ -43,7 +42,7 @@ var Core = chains.Chain{
 			},
 		},
 	},
-	BlockExplorers: map[string]chains.BlockExplorer{
+	BlockExplorers: map[string]types.BlockExplorer{
 		"default": {
 			Name: "CoreScan",
 			URL:  "https://scan.coredao.org",
@@ -53,8 +52,8 @@ var Core = chains.Chain{
 			URL:  "https://scan.coredao.org",
 		},
 	},
-	Contracts: &chains.Contracts{
-		Multicall3: &chains.Contract{
+	Contracts: &types.Contracts{
+		Multicall3: &types.Contract{
 			Address:      "0xcA11bde05977b3631167028862bE2a173976CA11",
 			BlockCreated: 5608481,
 		},

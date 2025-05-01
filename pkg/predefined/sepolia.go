@@ -1,21 +1,20 @@
 package predefined
 
 import (
+	"go-ethereum-chains/internal/types"
 	"math/big"
-
-	"go-ethereum-chains/pkg/chains"
 )
 
 // Sepolia is the official Sepolia testnet configuration.
-var Sepolia = chains.Chain{
+var Sepolia = types.Chain{
 	ID:   big.NewInt(11155111),
 	Name: "Sepolia",
-	NativeCurrency: chains.NativeCurrency{
+	NativeCurrency: types.NativeCurrency{
 		Name:     "Sepolia Ether",
 		Symbol:   "ETH",
 		Decimals: 18,
 	},
-	RPCUrls: map[string]chains.RpcTarget{
+	RPCUrls: map[string]types.RpcTarget{
 		"default": {
 			Http: []string{
 				"https://rpc.sepolia.org",
@@ -33,7 +32,7 @@ var Sepolia = chains.Chain{
 			WebSocket: []string{"wss://rpc.sepolia.org"},
 		},
 	},
-	BlockExplorers: map[string]chains.BlockExplorer{
+	BlockExplorers: map[string]types.BlockExplorer{
 		"default": {
 			Name: "Etherscan",
 			URL:  "https://sepolia.etherscan.io",
@@ -43,8 +42,8 @@ var Sepolia = chains.Chain{
 			URL:  "https://sepolia.etherscan.io",
 		},
 	},
-	Contracts: &chains.Contracts{
-		Multicall3: &chains.Contract{
+	Contracts: &types.Contracts{
+		Multicall3: &types.Contract{
 			Address:      "0xcA11bde05977b3631167028862bE2a173976CA11",
 			BlockCreated: 650767,
 		},

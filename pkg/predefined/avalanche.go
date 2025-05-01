@@ -1,21 +1,20 @@
 package predefined
 
 import (
+	"go-ethereum-chains/internal/types"
 	"math/big"
-
-	"go-ethereum-chains/pkg/chains"
 )
 
 // Avalanche is the Avalanche C-Chain mainnet configuration.
-var Avalanche = chains.Chain{
+var Avalanche = types.Chain{
 	ID:   big.NewInt(43114),
 	Name: "Avalanche",
-	NativeCurrency: chains.NativeCurrency{
+	NativeCurrency: types.NativeCurrency{
 		Name:     "Avalanche",
 		Symbol:   "AVAX",
 		Decimals: 18,
 	},
-	RPCUrls: map[string]chains.RpcTarget{
+	RPCUrls: map[string]types.RpcTarget{
 		"default": {
 			Http: []string{
 				"https://api.avax.network/ext/bc/C/rpc",
@@ -39,7 +38,7 @@ var Avalanche = chains.Chain{
 			},
 		},
 	},
-	BlockExplorers: map[string]chains.BlockExplorer{
+	BlockExplorers: map[string]types.BlockExplorer{
 		"default": {
 			Name: "Snowtrace",
 			URL:  "https://snowtrace.io",
@@ -49,8 +48,8 @@ var Avalanche = chains.Chain{
 			URL:  "https://snowtrace.io",
 		},
 	},
-	Contracts: &chains.Contracts{
-		Multicall3: &chains.Contract{
+	Contracts: &types.Contracts{
+		Multicall3: &types.Contract{
 			Address:      "0xcA11bde05977b3631167028862bE2a173976CA11",
 			BlockCreated: 11907934,
 		},

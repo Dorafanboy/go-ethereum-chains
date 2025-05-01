@@ -1,21 +1,20 @@
 package predefined
 
 import (
+	"go-ethereum-chains/internal/types"
 	"math/big"
-
-	"go-ethereum-chains/pkg/chains"
 )
 
 // PolygonZkEvm is the Polygon zkEVM mainnet configuration.
-var PolygonZkEvm = chains.Chain{
+var PolygonZkEvm = types.Chain{
 	ID:   big.NewInt(1101),
 	Name: "Polygon zkEVM",
-	NativeCurrency: chains.NativeCurrency{
+	NativeCurrency: types.NativeCurrency{
 		Name:     "Ether",
 		Symbol:   "ETH",
 		Decimals: 18,
 	},
-	RPCUrls: map[string]chains.RpcTarget{
+	RPCUrls: map[string]types.RpcTarget{
 		"default": {
 			Http: []string{
 				"https://zkevm-rpc.com",
@@ -30,7 +29,7 @@ var PolygonZkEvm = chains.Chain{
 			},
 		},
 	},
-	BlockExplorers: map[string]chains.BlockExplorer{
+	BlockExplorers: map[string]types.BlockExplorer{
 		"default": {
 			Name: "Polygon zkEVM Scan",
 			URL:  "https://zkevm.polygonscan.com",

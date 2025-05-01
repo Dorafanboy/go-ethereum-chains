@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"go-ethereum-chains/internal/types"
 	"math/big"
 
 	"go-ethereum-chains/pkg/chains"
@@ -13,15 +14,15 @@ func main() {
 	// 1. Define a custom chain
 	myChainID := big.NewInt(31337)
 	myChainName := "MyLocalTestnet"
-	myChain := chains.Chain{
+	myChain := types.Chain{
 		ID:   myChainID,
 		Name: myChainName,
-		NativeCurrency: chains.NativeCurrency{
+		NativeCurrency: types.NativeCurrency{
 			Name:     "Local Ether",
 			Symbol:   "LET",
 			Decimals: 18,
 		},
-		RPCUrls: map[string]chains.RpcTarget{
+		RPCUrls: map[string]types.RpcTarget{
 			"default": {
 				Http: []string{"http://127.0.0.1:8545"},
 			},

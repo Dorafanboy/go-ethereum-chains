@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"go-ethereum-chains/pkg/selector"
 	"math/big"
 	"time"
 
@@ -44,8 +45,8 @@ func main() {
 	fmt.Println("\n--- Selecting Sepolia RPCs ---")
 
 	// 1. Get the first available HTTP RPC from default/public providers
-	firstCrit := chains.DefaultRPCCriteria()
-	firstRPC, err := chains.GetFirstRPC(sepoliaID, firstCrit)
+	firstCrit := selector.DefaultRPCCriteria()
+	firstRPC, err := selector.GetFirstRPC(sepoliaID, firstCrit)
 	if err != nil {
 		fmt.Printf("Error getting first RPC: %v\n", err)
 	} else {
@@ -53,8 +54,8 @@ func main() {
 	}
 
 	// 2. Get a random HTTP RPC from default/public providers
-	randomCrit := chains.DefaultRPCCriteria()
-	randomRPC, err := chains.GetRandomRPC(sepoliaID, randomCrit)
+	randomCrit := selector.DefaultRPCCriteria()
+	randomRPC, err := selector.GetRandomRPC(sepoliaID, randomCrit)
 	if err != nil {
 		fmt.Printf("Error getting random RPC: %v\n", err)
 	} else {

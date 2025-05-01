@@ -1,21 +1,20 @@
 package predefined
 
 import (
+	"go-ethereum-chains/internal/types"
 	"math/big"
-
-	"go-ethereum-chains/pkg/chains"
 )
 
 // Bnb is the BNB Smart Chain mainnet configuration.
-var Bnb = chains.Chain{
+var Bnb = types.Chain{
 	ID:   big.NewInt(56),
 	Name: "BNB Smart Chain",
-	NativeCurrency: chains.NativeCurrency{
+	NativeCurrency: types.NativeCurrency{
 		Name:     "BNB",
 		Symbol:   "BNB",
 		Decimals: 18,
 	},
-	RPCUrls: map[string]chains.RpcTarget{
+	RPCUrls: map[string]types.RpcTarget{
 		"default": {
 			Http: []string{
 				"https://bsc-dataseed.bnbchain.org",
@@ -37,7 +36,7 @@ var Bnb = chains.Chain{
 			WebSocket: []string{"wss://bsc.publicnode.com"},
 		},
 	},
-	BlockExplorers: map[string]chains.BlockExplorer{
+	BlockExplorers: map[string]types.BlockExplorer{
 		"default": {
 			Name: "BscScan",
 			URL:  "https://bscscan.com",
@@ -47,8 +46,8 @@ var Bnb = chains.Chain{
 			URL:  "https://bscscan.com",
 		},
 	},
-	Contracts: &chains.Contracts{
-		Multicall3: &chains.Contract{
+	Contracts: &types.Contracts{
+		Multicall3: &types.Contract{
 			Address:      "0xcA11bde05977b3631167028862bE2a173976CA11",
 			BlockCreated: 15921452,
 		},

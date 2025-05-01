@@ -5,7 +5,7 @@ import (
 	"math/big"
 
 	"go-ethereum-chains/pkg/chains"
-	
+
 	_ "go-ethereum-chains/pkg/predefined"
 )
 

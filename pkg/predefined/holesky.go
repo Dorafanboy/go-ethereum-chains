@@ -1,21 +1,20 @@
 package predefined
 
 import (
+	"go-ethereum-chains/internal/types"
 	"math/big"
-
-	"go-ethereum-chains/pkg/chains"
 )
 
 // Holesky is the Holesky testnet configuration.
-var Holesky = chains.Chain{
+var Holesky = types.Chain{
 	ID:   big.NewInt(17000),
 	Name: "Holesky",
-	NativeCurrency: chains.NativeCurrency{
+	NativeCurrency: types.NativeCurrency{
 		Name:     "Holesky Ether",
 		Symbol:   "ETH",
 		Decimals: 18,
 	},
-	RPCUrls: map[string]chains.RpcTarget{
+	RPCUrls: map[string]types.RpcTarget{
 		"default": {
 			Http:      []string{"https://rpc.holesky.ethpandaops.io", "https://ethereum-holesky.publicnode.com"},
 			WebSocket: []string{"wss://ethereum-holesky.publicnode.com"},
@@ -25,7 +24,7 @@ var Holesky = chains.Chain{
 			WebSocket: []string{"wss://ethereum-holesky.publicnode.com"},
 		},
 	},
-	BlockExplorers: map[string]chains.BlockExplorer{
+	BlockExplorers: map[string]types.BlockExplorer{
 		"default": {
 			Name: "Etherscan",
 			URL:  "https://holesky.etherscan.io",
@@ -35,8 +34,8 @@ var Holesky = chains.Chain{
 			URL:  "https://holesky.etherscan.io",
 		},
 	},
-	Contracts: &chains.Contracts{
-		Multicall3: &chains.Contract{
+	Contracts: &types.Contracts{
+		Multicall3: &types.Contract{
 			Address:      "0xcA11bde05977b3631167028862bE2a173976CA11",
 			BlockCreated: 49461,
 		},
