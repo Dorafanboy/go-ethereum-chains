@@ -36,3 +36,6 @@ Thumbs.db
 
 # Go build cache
 *.log
+
+# Cursor IDE Project Rules
+# Add project-specific patterns, preferences, and intelligence here.
