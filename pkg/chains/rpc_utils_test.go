@@ -3,7 +3,6 @@ package chains
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"math/big"
 	"net/http"
 	"net/http/httptest"
@@ -14,8 +13,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
-
-// TODO: Add comprehensive tests for CheckRPCs using httptest for HTTP and potentially custom WS server/mocking library.
 
 func setupHTTPServer(t *testing.T, handler func(w http.ResponseWriter, r *http.Request)) *httptest.Server {
 	t.Helper()
@@ -41,6 +38,7 @@ func setupWSServer(t *testing.T, handler func(conn *websocket.Conn)) (*httptest.
 	return s, wsURL
 }
 
+// TestCheckRPCs_Basic performs a basic test of the CheckRPCs function using mock servers.
 func TestCheckRPCs_Basic(t *testing.T) {
 	httpServer := setupHTTPServer(t, func(w http.ResponseWriter, r *http.Request) {
 		var req jsonRPCRequest
@@ -137,131 +135,4 @@ func TestCheckRPCs_Basic(t *testing.T) {
 	assert.Equal(t, 1, httpFail, "Expected 1 failed HTTP check")
 	assert.Equal(t, 1, wsOK, "Expected 1 successful WS check")
 	assert.Equal(t, 1, wsFail, "Expected 1 failed WS check")
-}
-
-var originalRPCChecker = rpcChecker
-
-func mockCheckRPCs(results []RPCStatus, expectedIdentifier any, expectedOpts CheckRPCOptions) func(ctx context.Context, identifier any, opts CheckRPCOptions) ([]RPCStatus, error) {
-	return func(ctx context.Context, identifier any, opts CheckRPCOptions) ([]RPCStatus, error) {
-		if fmt.Sprintf("%v", identifier) != fmt.Sprintf("%v", expectedIdentifier) {
-			return nil, fmt.Errorf("mockCheckRPCs: unexpected identifier: got %v, want %v", identifier, expectedIdentifier)
-		}
-		return results, nil
-	}
-}
-
-func TestGetFastestRPC(t *testing.T) {
-	testID := big.NewInt(8888)
-	RegisterChain(Chain{ID: testID, Name: "Fastest Test"})
-
-	t.Cleanup(func() {
-		rpcChecker = originalRPCChecker
-		rpcCheckCache = make(map[rpcCacheKey]rpcCacheEntry)
-	})
-
-	status1 := RPCStatus{URL: "http://fast.com", IsHTTP: true, IsAvailable: true, Latency: 100 * time.Millisecond}
-	status2 := RPCStatus{URL: "http://slow.com", IsHTTP: true, IsAvailable: true, Latency: 500 * time.Millisecond}
-	status3 := RPCStatus{URL: "ws://fast.com", IsWebSocket: true, IsAvailable: true, Latency: 150 * time.Millisecond}
-	status4 := RPCStatus{URL: "http://unavailable.com", IsHTTP: true, IsAvailable: false, Error: fmt.Errorf("timeout")}
-	status5 := RPCStatus{URL: "ws://unavailable.com", IsWebSocket: true, IsAvailable: false, Error: fmt.Errorf("dial failed")}
-
-	tests := []struct {
-		name           string
-		mockResults    []RPCStatus
-		criteria       RPCCriteria
-		wantURL        string
-		wantErr        bool
-		checkCacheHits int
-	}{
-		{
-			name:           "Select fastest HTTP",
-			mockResults:    []RPCStatus{status1, status2, status3, status4, status5},
-			criteria:       RPCCriteria{AllowHTTP: true, AllowWebSocket: false},
-			wantURL:        "http://fast.com",
-			wantErr:        false,
-			checkCacheHits: 1,
-		},
-		{
-			name:           "Select fastest WS",
-			mockResults:    []RPCStatus{status1, status2, status3, status4, status5},
-			criteria:       RPCCriteria{AllowHTTP: false, AllowWebSocket: true},
-			wantURL:        "ws://fast.com",
-			wantErr:        false,
-			checkCacheHits: 1,
-		},
-		{
-			name:           "Select fastest overall (HTTP is faster)",
-			mockResults:    []RPCStatus{status1, status2, status3, status4, status5},
-			criteria:       RPCCriteria{AllowHTTP: true, AllowWebSocket: true},
-			wantURL:        "http://fast.com",
-			wantErr:        false,
-			checkCacheHits: 1,
-		},
-		{
-			name:           "Select fastest overall (WS is faster)",
-			mockResults:    []RPCStatus{status2, status3, status4, status5},
-			criteria:       RPCCriteria{AllowHTTP: true, AllowWebSocket: true},
-			wantURL:        "ws://fast.com",
-			wantErr:        false,
-			checkCacheHits: 1,
-		},
-		{
-			name:           "No available matching criteria",
-			mockResults:    []RPCStatus{status4, status5},
-			criteria:       RPCCriteria{AllowHTTP: true, AllowWebSocket: true},
-			wantURL:        "",
-			wantErr:        true,
-			checkCacheHits: 0,
-		},
-		{
-			name:           "Only unavailable HTTP matches criteria",
-			mockResults:    []RPCStatus{status3, status4, status5},
-			criteria:       RPCCriteria{AllowHTTP: true, AllowWebSocket: false},
-			wantURL:        "",
-			wantErr:        true,
-			checkCacheHits: 1,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			expectedOpts := CheckRPCOptions{
-				TimeoutPerCheck: DefaultCheckOptions().TimeoutPerCheck,
-				CheckHTTP:       tt.criteria.AllowHTTP,
-				CheckWebSocket:  tt.criteria.AllowWebSocket,
-				Providers:       tt.criteria.Providers,
-			}
-			rpcChecker = mockCheckRPCs(tt.mockResults, testID, expectedOpts)
-			rpcCheckCache = make(map[rpcCacheKey]rpcCacheEntry)
-
-			gotURL, err := GetFastestRPC(context.Background(), testID, tt.criteria)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GetFastestRPC() first call error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if gotURL != tt.wantURL {
-				t.Errorf("GetFastestRPC() first call gotURL = %v, want %v", gotURL, tt.wantURL)
-			}
-
-			hitCount := 0
-			rpcChecker = func(ctx context.Context, identifier any, opts CheckRPCOptions) ([]RPCStatus, error) {
-				hitCount++
-				return tt.mockResults, nil
-			}
-
-			gotURL2, err2 := GetFastestRPC(context.Background(), testID, tt.criteria)
-			if (err2 != nil) != tt.wantErr {
-				t.Errorf("GetFastestRPC() second call error = %v, wantErr %v", err2, tt.wantErr)
-			}
-			if gotURL2 != tt.wantURL {
-				t.Errorf("GetFastestRPC() second call gotURL = %v, want %v", gotURL2, tt.wantURL)
-			}
-
-			if tt.checkCacheHits > 0 {
-				assert.Equal(t, 0, hitCount, "CheckRPCs should not have been called on the second run (cache hit expected)")
-			} else {
-				assert.GreaterOrEqual(t, hitCount, 1, "CheckRPCs should have been called on the second run (cache miss expected)")
-			}
-		})
-	}
 }

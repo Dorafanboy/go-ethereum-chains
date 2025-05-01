@@ -143,7 +143,6 @@ func main() {
 *   **NEW:** `func DefaultRPCCriteria() RPCCriteria` - Returns default criteria for selecting RPCs.
 *   **NEW:** `func GetFirstRPC(identifier any, criteria RPCCriteria) (string, error)` - Gets the first configured RPC URL matching the criteria (no availability check).
 *   **NEW:** `func GetRandomRPC(identifier any, criteria RPCCriteria) (string, error)` - Gets a random configured RPC URL matching the criteria (no availability check).
-*   **NEW:** `func GetFastestRPC(ctx context.Context, identifier any, criteria RPCCriteria) (string, error)` - Checks RPCs matching criteria and returns the fastest available one (uses a 1-minute cache).
 
 *(See `pkg/examples/rpc_selection/main.go` for usage examples of RPC checking and selection)*
 

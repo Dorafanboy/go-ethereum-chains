@@ -8,13 +8,14 @@ import (
 	"go-ethereum-chains/pkg/chains"
 )
 
+// TestRegisterChain tests the registration and overwriting of chains.
 func TestRegisterChain(t *testing.T) {
 	// Test case 1: Register a new chain
 	chain1 := chains.Chain{
 		ID:             big.NewInt(1),
 		Name:           "TestChain1",
 		NativeCurrency: chains.NativeCurrency{Name: "TestCoin", Symbol: "TC1", Decimals: 18},
-		RPCUrls:        chains.RpcUrls{Default: chains.RpcTarget{Http: []string{"http://localhost:8545"}}},
+		RPCUrls:        map[string]chains.RpcTarget{"default": {Http: []string{"http://localhost:8545"}}},
 	}
 	chains.RegisterChain(chain1)
 
@@ -33,7 +34,7 @@ func TestRegisterChain(t *testing.T) {
 		ID:             big.NewInt(2),
 		Name:           "TestChain2",
 		NativeCurrency: chains.NativeCurrency{Name: "AnotherCoin", Symbol: "AC2", Decimals: 6},
-		RPCUrls:        chains.RpcUrls{Default: chains.RpcTarget{Http: []string{"http://localhost:8546"}}},
+		RPCUrls:        map[string]chains.RpcTarget{"default": {Http: []string{"http://localhost:8546"}}},
 	}
 	chains.RegisterChain(chain2)
 
@@ -51,9 +52,9 @@ func TestRegisterChain(t *testing.T) {
 	// Test case 3: Overwrite chain1 with new data (same ID and Name)
 	chain1Overwrite := chains.Chain{
 		ID:             big.NewInt(1),
-		Name:           "TestChain1", // Same Name
+		Name:           "TestChain1",
 		NativeCurrency: chains.NativeCurrency{Name: "UpdatedCoin", Symbol: "TC1_UPD", Decimals: 18},
-		RPCUrls:        chains.RpcUrls{Default: chains.RpcTarget{Http: []string{"http://new-rpc:8545"}}},
+		RPCUrls:        map[string]chains.RpcTarget{"default": {Http: []string{"http://new-rpc:8545"}}},
 	}
 	chains.RegisterChain(chain1Overwrite)
 
@@ -76,6 +77,7 @@ func TestRegisterChain(t *testing.T) {
 	}
 }
 
+// TestGetChainByID tests retrieving chains by their ID.
 func TestGetChainByID(t *testing.T) {
 	// Setup: Register a known chain for testing retrieval
 	testChain := chains.Chain{ID: big.NewInt(101), Name: "GetByID_Test"}
@@ -120,6 +122,7 @@ func TestGetChainByID(t *testing.T) {
 	}
 }
 
+// TestGetChainByName tests retrieving chains by their name.
 func TestGetChainByName(t *testing.T) {
 	testChain := chains.Chain{ID: big.NewInt(102), Name: "GetByName_Test"}
 	chains.RegisterChain(testChain)
@@ -163,6 +166,7 @@ func TestGetChainByName(t *testing.T) {
 	}
 }
 
+// TestSetAndGetChainRPCs tests setting and getting custom HTTP RPC overrides.
 func TestSetAndGetChainRPCs(t *testing.T) {
 	chainID := big.NewInt(202)
 	chainName := "RpcTestChain"
@@ -170,7 +174,7 @@ func TestSetAndGetChainRPCs(t *testing.T) {
 	testChain := chains.Chain{
 		ID:      chainID,
 		Name:    chainName,
-		RPCUrls: chains.RpcUrls{Default: chains.RpcTarget{Http: defaultRPCs}},
+		RPCUrls: map[string]chains.RpcTarget{"default": {Http: defaultRPCs}},
 	}
 	chains.RegisterChain(testChain)
 

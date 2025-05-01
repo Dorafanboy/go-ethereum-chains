@@ -258,7 +258,7 @@ func checkWebSocket(ctx context.Context, url string, timeout time.Duration) RPCS
 			resp.Body.Close()
 			errMsg = fmt.Sprintf("%s (status: %s, body: %s)", errMsg, resp.Status, string(bodyBytes))
 		}
-		status.Error = fmt.Errorf(errMsg)
+		status.Error = fmt.Errorf("%s", errMsg)
 		return status
 	}
 	defer conn.Close()

@@ -7,13 +7,13 @@ import (
 )
 
 // registryByID stores chains keyed by their chain ID (int64).
-var registryByID sync.Map // map[int64]Chain
+var registryByID sync.Map
 
 // registryByName stores chains keyed by their name (string).
-var registryByName sync.Map // map[string]Chain
+var registryByName sync.Map
 
 // userRPCs stores user-defined RPC endpoints keyed by chain ID (int64).
-var userRPCs sync.Map // map[int64][]string
+var userRPCs sync.Map
 
 // RegisterChain adds or updates a chain definition in the global registries.
 func RegisterChain(chain Chain) {

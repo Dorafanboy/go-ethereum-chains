@@ -60,44 +60,4 @@ func main() {
 	} else {
 		fmt.Printf("Random matching HTTP RPC: %s\n", randomRPC)
 	}
-
-	// 3. Get the fastest available HTTP RPC from default/public providers
-	fastestHttpCrit := chains.DefaultRPCCriteria()
-	ctxFastestHttp, cancelFastestHttp := context.WithTimeout(ctx, 10*time.Second)
-	defer cancelFastestHttp()
-	fastestHttpRPC, err := chains.GetFastestRPC(ctxFastestHttp, sepoliaID, fastestHttpCrit)
-	if err != nil {
-		fmt.Printf("Error getting fastest HTTP RPC: %v\n", err)
-	} else {
-		fmt.Printf("Fastest available HTTP RPC: %s\n", fastestHttpRPC)
-	}
-
-	// 4. Get the fastest available WebSocket RPC from default/public providers
-	fastestWsCrit := chains.DefaultRPCCriteria()
-	fastestWsCrit.AllowHTTP = false
-	fastestWsCrit.AllowWebSocket = true
-	ctxFastestWs, cancelFastestWs := context.WithTimeout(ctx, 10*time.Second)
-	defer cancelFastestWs()
-	fastestWsRPC, err := chains.GetFastestRPC(ctxFastestWs, sepoliaID, fastestWsCrit)
-	if err != nil {
-		fmt.Printf("Error getting fastest WS RPC: %v\n", err)
-	} else {
-		fmt.Printf("Fastest available WebSocket RPC: %s\n", fastestWsRPC)
-	}
-
-	// --- Example for a network potentially without WS (e.g., Mainnet) ---
-	fmt.Println("\n--- Selecting Mainnet RPCs (WS might fail) ---")
-	mainnetID := big.NewInt(1)
-
-	mainnetWsCrit := chains.DefaultRPCCriteria()
-	mainnetWsCrit.AllowHTTP = false
-	mainnetWsCrit.AllowWebSocket = true
-	ctxMainnetWs, cancelMainnetWs := context.WithTimeout(ctx, 10*time.Second)
-	defer cancelMainnetWs()
-	mainnetWsRPC, err := chains.GetFastestRPC(ctxMainnetWs, mainnetID, mainnetWsCrit)
-	if err != nil {
-		fmt.Printf("Error getting fastest Mainnet WS RPC (expected): %v\n", err)
-	} else {
-		fmt.Printf("Fastest available Mainnet WebSocket RPC: %s\n", mainnetWsRPC)
-	}
 }

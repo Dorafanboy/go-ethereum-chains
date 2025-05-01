@@ -37,6 +37,7 @@ func setupSelectorTest() {
 	registryByName.Store(testChainName, testChain)
 }
 
+// TestGetFirstRPC tests the GetFirstRPC function.
 func TestGetFirstRPC(t *testing.T) {
 	setupSelectorTest()
 
@@ -119,6 +120,7 @@ func TestGetFirstRPC(t *testing.T) {
 	}
 }
 
+// TestGetRandomRPC tests the GetRandomRPC function.
 func TestGetRandomRPC(t *testing.T) {
 	setupSelectorTest()
 
